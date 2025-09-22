@@ -88,6 +88,9 @@ Het heeft ook een vergelijkbare for-loop (maar iets anders).
 - Als `product.name` overeenkomt met `productName`
 - Dan tellen we `amount` bij `product.amount` op en returnen we de methode.
 
+Eindig de for-loop met een return wanneer het item ge-restocked is. 
+Als restock niet lukt, omdat deze supermarkt dit item niet in de productenlijst heeft staan bijvoorbeeld, print daar dan een berichtje voor.
+
 
 ### Stap 6
 In `Main` staan nu 3 lijst, 1 map, 1 customer en 1 scanner.  
