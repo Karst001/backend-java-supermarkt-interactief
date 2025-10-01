@@ -20,7 +20,7 @@ public class Customer {
         return superMarket;
     }
 
-    //public method called from
+    //public method called from Main
     public void buyItem(String productName, int amount){
         //Check if customer already selected a SuperMarket, if not exit
         if(superMarket == null){
@@ -43,21 +43,21 @@ public class Customer {
         System.out.println("The selected supermarket' " + superMarket + "' does not sell '" + productName + "'");
     }
 
-    //method to restock item and print result
-    public void restockItem(String productName, int amount){
-        //iterate through this.products and check for each product in this.products if product.name === String productName that was passed as param
-        for ( Product product : superMarket.products) {
-            if (!product.name.equalsIgnoreCase(productName)) {
-                //restock the product
-                product.amount -= amount;
-
-                //product found so exit
-                System.out.println("Product '" + productName + "' was returned to the store with a total of " + amount + " pieces.");
-                return;
-            }
-        }
-
-        //product not found so warn user
-        System.out.println("The selected product '" + productName + "' was not found.");
-    }
+//    //method to restock item and print result
+//    public void restockItem(String productName, int amount){
+//        //iterate through this.products and check for each product in this.products if product.name === String productName that was passed as param
+//        for ( Product product : superMarket.products) {
+//            if (!product.name.equalsIgnoreCase(productName)) {
+//                //restock the product
+//                product.amount += amount;
+//
+//                //product found so exit
+//                System.out.println("Product '" + productName + "' was returned to the store with a total of " + amount + " pieces.");
+//                return;
+//            }
+//        }
+//
+//        //product not found so warn user
+//        System.out.println("The selected product '" + productName + "' was not found.");
+//    }
 }

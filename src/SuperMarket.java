@@ -17,7 +17,7 @@ public class SuperMarket {
         return name;
     }
 
-    //method to update stock qty and print result
+    //method to update stock qty and print result called from Customer
     public void buyItem(Product product, int amount) {
         if (amount <= 0) {
             System.out.println("Warning: you cannot order a negative quantity.");
@@ -34,6 +34,24 @@ public class SuperMarket {
         }
     }
 
+    //method to restock item and print result
+    public void restockItem(String productName, int amount, SuperMarket superMarket) {
+        //iterate through this.products and check for each product in this.products if product.name === String productName that was passed as param
+        for ( Product product : superMarket.products) {
+            if (product.name.equalsIgnoreCase(productName)) {
+                //restock the product
+                product.amount += amount;
+
+                //product found so exit
+                System.out.println("Product '" + productName + "' was returned to the store with a total of " + amount + " pieces.\nThere are now " + product.amount + " in stock.");
+                return;
+            }
+        }
+
+        //product not found so warn user
+        System.out.println("The selected product '" + productName + "' was not found.");
+    }
+
     public boolean hasProduct(String productName) {
         //check if products is not null
         if (products == null) {
@@ -47,5 +65,26 @@ public class SuperMarket {
             }
         }
         return false;
+    }
+
+
+    public void setUnitPrice(String productName, double unitPrice, SuperMarket superMarket) {
+        //iterate through this.products and check for each product in this.products if product.name === String productName that was passed as param
+        for ( Product product : superMarket.products) {
+            if (product.name.equalsIgnoreCase(productName)) {
+                //update product price
+                double currentUnitPrice = product.unitPrice;
+
+                //set new price
+                product.unitPrice = unitPrice;
+
+                //product found so exit
+                System.out.println("Product '" + productName + "' previous price was " +  currentUnitPrice + " and is now changed to " + product.unitPrice);
+                return;
+            }
+        }
+
+        //product not found so warn user
+        System.out.println("The selected product '" + productName + "' was not found.");
     }
 }

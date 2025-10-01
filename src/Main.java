@@ -1,10 +1,11 @@
 import java.util.*;
-
+import helpers.Helpers;
 
 public class Main {
     static Customer customer;
     static String productName;
     static int amount;
+    static double unitPrice;
 
     static Scanner scanner = new Scanner(System.in);
 
@@ -43,39 +44,23 @@ public class Main {
         customer = new Customer("Bob");
 
         boolean isExit = false;
-        String superMarketChoice = "";
-        SuperMarket selectedSuperMarket;
 
         //start the interface with the user to prompt for input
         while(!isExit) {
             System.out.println("\nWhat do you want to do?");
             System.out.println("1 - Pick a supermarket");
-            System.out.println("2 - buy a product");
-            System.out.println("3 - restock a product");
-            System.out.println("4 - exit");
+            System.out.println("2 - Purchase a product");
+            System.out.println("3 - Restock a product");
+            System.out.println("4 - Change product price");
+            System.out.println("5 - Add a product");
+            System.out.println("6 - Add new supermarket");
+            System.out.println("7 - Exit");
             int selectedChoice = scanner.nextInt();
             scanner.nextLine();
 
             switch(selectedChoice) {
                 case 1:
-                    System.out.println("Which supermarket do you want to go to?");
-                    System.out.println("Pick one of the following:");
-                    System.out.println("- Albert Heijn");
-                    System.out.println("- Jumbo");
-                    System.out.println("- Aldi");
-                    superMarketChoice = scanner.nextLine().trim().toLowerCase();
-
-                    //validate selection
-                    if (validateStore(superMarketChoice)) {
-                        //get the selection from the Map that holds the available Supermarkets
-                        selectedSuperMarket = availableMarkets.get(superMarketChoice);
-
-                        //select the selected supermarket
-                        customer.goToSuperMarket(selectedSuperMarket);
-                    } else {
-                        System.out.println("Sorry, this supermarket does not exist.");
-                    }
-
+                    promptMenu();
                     break;
 
                 case 2:
@@ -85,50 +70,32 @@ public class Main {
                         break;
                     }
 
-                    //validate input
-                    if(setProductName(customer.getSuperMarket().getSuperMarketName(), "purchase")) {
-                        System.out.println("Sorry, this supermarket does not sell this product.");
-                    } else {
-                        setAmount("purchase");
-
-                        //make the purchase
-                        customer.buyItem(productName, amount);
-                    }
-
+                    validateInput("purchase");
                     break;
 
                 case 3:
-                    System.out.println("Which supermarket do you want to restock?");
-                    System.out.println("Pick one of the following:");
-                    System.out.println("- Albert Heijn");
-                    System.out.println("- Jumbo");
-                    System.out.println("- Aldi");
-                    superMarketChoice = scanner.nextLine().toLowerCase();
-
-                    //validate selection
-                    if (validateStore(superMarketChoice)) {
-                        //get the selection from the Map that holds the available Supermarkets
-                        selectedSuperMarket = availableMarkets.get(superMarketChoice);
-
-                        //select the selected supermarket
-                        customer.goToSuperMarket(selectedSuperMarket);
-
-                        //validate input
-                        if(setProductName(customer.getSuperMarket().getSuperMarketName(), "restock")) {
-                            System.out.println("Sorry, this supermarket does not sell this product, restock not allowed.");
-                        } else {
-                            setAmount("restock");
-
-                            //return the product
-                            customer.restockItem(productName, amount);
-                        }
-                    } else {
-                        System.out.println("Sorry, this supermarket does not exist.");
+                    if (promptMenu()) {
+                        validateInput("restock");
                     }
-
                     break;
 
                 case 4:
+                    if (promptMenu()) {
+                        validateInput("price_change");
+                    }
+                    break;
+
+                case 5:
+                    if (promptMenu()) {
+                        validateInput("add_product");
+                    }
+                    break;
+
+                case 6:
+                    addNewSupermarket();
+                    break;
+
+                case 7:
                     System.out.println("Thank you for using our online services.");
                     isExit = true; //end the while loop
                     break;
@@ -139,22 +106,6 @@ public class Main {
         }
     }
 
-    //local helper method to update stock qty and print result
-    private void buyItem(Product product, int amount) {
-        if (amount <= 0) {
-            System.out.println("Warning: you cannot order a negative quantity.");
-            return;
-        }
-
-        if (amount > product.amount) {
-            System.out.println("You cannot buy " + amount + " units of product " + product.name + ", unfortunately we only have " + product.amount + " in stock.");
-        } else {
-            //deduct the sold amount from existing product amount
-            product.amount -= amount;
-            double totalOrderValue = amount * product.unitPrice;
-            System.out.println("You bought " + amount + " pcs. of " + product.name + " for a total of " + totalOrderValue + " euros.");
-        }
-    }
 
     //helpers to prompt the messages to user
     private static boolean setProductName(String superMarketName, String transactionType){
@@ -162,23 +113,54 @@ public class Main {
             System.out.println("Which product do you want to purchase from " + superMarketName + "?");
         } else if(transactionType.equals("restock")) {
             System.out.println("Which product do you want to return to " + superMarketName + "?");
+        } else if(transactionType.equals("price_change")) {
+            System.out.println("Which product do you want change the price for?");
         }
 
-        productName = scanner.nextLine().trim();
+        if(!transactionType.equals("add_product")) {
+            productName = scanner.nextLine().trim();
 
-        //validate product as not all markets sell the same
-        SuperMarket superMarket = availableMarkets.get(superMarketName.trim().toLowerCase());
-        return !superMarket.hasProduct(productName);
+            //validate product as not all markets sell the same
+            SuperMarket superMarket = availableMarkets.get(superMarketName.trim().toLowerCase());
+            return !superMarket.hasProduct(productName);
+        } else {
+            return false;
+        }
     }
 
-    private static void setAmount(String transactionType){
+
+    private static boolean setAmount(String transactionType){
         if (transactionType.equals("purchase")) {
             System.out.println("How many do you want to purchase of product " + productName + "?");
         } else if(transactionType.equals("restock")) {
             System.out.println("How many do you want to return of product " + productName + "?");
         }
 
-        amount = Integer.parseInt(scanner.nextLine().trim());
+        String entry = scanner.nextLine().trim();
+
+        //validate to ensure the entry is numeric
+        if(Helpers.isInt(entry)) {
+            amount = Integer.parseInt(entry);
+            return true;
+        } else {
+            System.out.println("Invalid input. You must enter a number.");
+            return false;
+        }
+    }
+
+
+    private static boolean setUnitPrice () {
+        System.out.println("Please enter new product price?");
+        String entry = scanner.nextLine().trim();
+
+        //validate to ensure the entry is double
+        if(Helpers.isDouble(entry)) {
+            unitPrice = Double.parseDouble(entry);
+            return true;
+        } else {
+            System.out.println("Invalid input. You must enter a double or whole number.");
+            return false;
+        }
     }
 
 
@@ -186,4 +168,114 @@ public class Main {
         String key = superMarketName.trim().toLowerCase();
         return Main.availableMarkets.containsKey(key);
     }
+
+
+    //common helper called by the switch statement
+    private static boolean promptMenu() {
+        System.out.println("Which supermarket do you want to go to?");
+        System.out.println("Pick one of the following:");
+
+        //since we now have the option to add a new market, it ca no longer be hardcoded
+        List<SuperMarket> allMarkets = new ArrayList<>(availableMarkets.values());
+        for (SuperMarket market : allMarkets) {
+            System.out.println("- " + market.getSuperMarketName());
+        }
+
+        String superMarketChoice = scanner.nextLine().trim().toLowerCase();
+
+        //validate selection
+        if (validateStore(superMarketChoice)) {
+            //get the selection from the Map that holds the available Supermarkets
+            SuperMarket selectedSuperMarket = availableMarkets.get(superMarketChoice);
+
+            //select the selected supermarket
+            customer.goToSuperMarket(selectedSuperMarket);
+            return true;
+        } else {
+            System.out.println("Sorry, this supermarket does not exist.");
+            return false;
+        }
+    }
+
+
+    //input validation
+    private static void validateInput(String transactionType) {
+        //validate input
+        if (setProductName(customer.getSuperMarket().getSuperMarketName(), transactionType)) {
+            if (transactionType.equals("purchase")) {
+                System.out.println("Sorry, this supermarket does not sell this product.");
+            } else if(transactionType.equals("restock")) {
+                System.out.println("Sorry, this supermarket does not sell this product, restock not allowed.");
+            }
+        } else {
+            if (transactionType.equals("purchase")) {
+                if(setAmount("purchase")) {
+                    //return the product
+                    customer.buyItem(productName, amount);
+                }
+            } else if (transactionType.equals("restock")) {
+                if(setAmount("restock")) {
+                    //return the product
+                    SuperMarket selectedSuperMarket = customer.getSuperMarket();
+                    selectedSuperMarket.restockItem(productName, amount, selectedSuperMarket);
+                }
+            } else if (transactionType.equals("price_change")) {
+                if (setUnitPrice()) {
+                    SuperMarket selectedSuperMarket = customer.getSuperMarket();
+                    selectedSuperMarket.setUnitPrice(productName, unitPrice , selectedSuperMarket);
+                }
+            } else if (transactionType.equals("add_product")) {
+                SuperMarket selectedSuperMarket = customer.getSuperMarket();
+
+                System.out.println("Please enter new product name?");
+                productName = scanner.nextLine().trim();
+
+                //check if superMarket already has this product, if not, add the product
+                if (!selectedSuperMarket.hasProduct(productName)) {
+                    System.out.println("Please enter the product price");
+                    unitPrice = Double.parseDouble(scanner.nextLine().trim());
+
+                    System.out.println("Please enter initial stock quantity");
+                    amount = Integer.parseInt(scanner.nextLine().trim());
+
+                    //finally, add the product to the selected superMarket
+                    selectedSuperMarket.products.add(new Product(productName, unitPrice, amount));
+                    System.out.println("New product '" + productName + "' has been added.");
+                } else {
+                    System.out.println("Sorry, product '" + productName + "' is already exists in this supermarket.");
+                }
+            }
+        }
+    }
+
+    private static void addNewSupermarket(){
+        System.out.println("Please enter the name of the new supermarket:");
+        String marketName = scanner.nextLine().trim();
+
+        //do some checking
+        if (marketName.isEmpty()) {
+            System.out.println("Name cannot be empty.");
+            return;
+        }
+
+        String marketKey = marketName.toLowerCase();
+
+        //check if this supermarket exists already
+        if (availableMarkets.containsKey(marketKey)) {
+            System.out.println("Sorry, that supermarket already exists.");
+            return;
+        }
+
+        //create empty product list
+        List<Product> productsForNewMarket = new ArrayList<>();
+
+        //create new market with the empty product list
+        SuperMarket newMarket = new SuperMarket(marketName,productsForNewMarket);
+
+        //add the new market to the existing list of markets so it can be used
+        availableMarkets.put(marketKey, newMarket);
+
+        System.out.println("Added supermarket '" + marketName + "', you can now add products");
+    }
 }
+
